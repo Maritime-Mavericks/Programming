@@ -1,4 +1,4 @@
-# Project-Code
+# Programming
 
 Here goes all the code files and programs for the project. Examples of files are:
 - C files for the Arduino
