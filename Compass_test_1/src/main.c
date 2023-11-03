@@ -11,8 +11,8 @@
 #define PI	3.14159265359	/* Define Pi value */
 #define Declination	0.0527/* Define declination of location from where measurement going to be done. e.g. here we have added declination from location Pune city, India. we can get it from http://www.magnetic-declination.com */
 
-int offsetX = 0;
-int offsetY = 0;
+int offsetX = -24;
+int offsetY = 118;
 
 void Magneto_init(){		/* Magneto initialize function */
 	i2c_start(0x3C);	/* Start and write SLA+W */
@@ -124,10 +124,10 @@ int main() {
 		int x = Magneto_GetX();
 		int y = Magneto_GetY();
 		int z = Magneto_GetZ();
-		printf("%d, %d, %d\n", x, y, z);
-		//printf("Deg: %d     Off-Deg: %d\n", heading, headingOffset);
+		//printf("%d, %d, %d\n", x, y, z);
+		printf("Deg: %d     Off-Deg: %d\n", heading, headingOffset);
 
-		_delay_ms(200);
+		_delay_ms(50);
 	}
 
 	return 0;
