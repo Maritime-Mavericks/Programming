@@ -39,6 +39,11 @@ int main(void)
 	
 	//	Start listening to incoming messages
 	nrf24_start_listening();
+
+	status = nrf24_send_message(tx_message);
+	if (status == true) printf("Message sent successfully\n");
+
+	_delay_ms(2000);
 	
     while (1) {
 		if (message_received)
@@ -47,7 +52,7 @@ int main(void)
 			message_received = false;
 			printf("Received message: %s\n",nrf24_read_message());
 			//	Send message as response
-			_delay_ms(500);
+			_delay_ms(1000);
 			status = nrf24_send_message(tx_message);
 			if (status == true) printf("Message sent successfully\n");
 		}
