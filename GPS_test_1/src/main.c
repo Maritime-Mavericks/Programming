@@ -11,7 +11,6 @@
 
 #define BAUDRATE 9600
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
-#define INDENT_SPACES "  "
 
 void USART_init(void);
 volatile char received_data;
