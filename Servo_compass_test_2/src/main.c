@@ -220,12 +220,13 @@ int main(void){
 		int headingOff = Magneto_GetHeadingOffset();
 		printf("Angle: %d	AngleOff: %d	%d, %d, %d\n", heading, headingOff, x, y, z);
 
-		if(abs(headingOff - 180) < 10){
+		if(abs(headingOff - 360) < 6 || abs(headingOff - 0) < 6){
+			printf("FOUND NORTH! \n");
 			break;
 		}
 	}
 
-	_delay_ms(2000);
+	_delay_ms(20000);
 
 	OCR1A = START;
 	_delay_ms(1000);

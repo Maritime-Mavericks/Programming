@@ -4,14 +4,9 @@
 #include <avr/interrupt.h>
 #include <time.h>
 #include <math.h>
-#include <string.h>
 
 #include "usart.h"
 #include "i2cmaster.h"
-#include "minmea.h"
-
-#define BAUDRATE 9600
-#define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
 
 #define START 999
 #define NEUTRAL 2999
@@ -19,19 +14,6 @@
 
 #define PI	3.14159265359	/* Define Pi value */
 #define Declination	0.0527/* Define declination of location from where measurement going to be done */
-
-void USART_init(void);
-volatile char received_data;
-char received_string[512]; // Maximum string length, adjust as needed
-volatile uint8_t string_index = 0;
-
-float latitude;
-float longitude;
-float speed;
-
-// Right-most point of Alsik building (towards the castle)
-float destLatitude = 54.911363;
-float destLongitude = 9.781718;
 
 int offsetX = 0;
 int offsetY = 0;
@@ -126,11 +108,13 @@ int main(void){
 
 	uart_init(); // open the communication to the microcontroller
     io_redirect(); // redirect input and output to the communication
-	i2c_init(); // Initialize I2C communication
-	
+
+	// Initialize I2C communication
+	i2c_init();
 	Magneto_init();	
 
 	DDRB |= (1<<PB1); // Set PB1 as output
+
 	TCCR1A |= (1<<COM1A1) | (1<<WGM11); // Fast PWM, non-inverting mode
 	TCCR1B |= (1<<WGM13) | (1<<WGM12) | (1<<CS11); // Fast PWM, prescaler = 8
 	ICR1 = 39999;   //20ms PWM period
@@ -184,89 +168,68 @@ int main(void){
 
 	_delay_ms(1000);
 
-	// INITIALIZE GPS
-	// -------------------------------------------------------------------
+	printf("Starting 180 degree rotation...\n");
+	for(int i = 0; i < 1; i++){
+		for(int angle = 0; angle <= 180; angle = angle + 5){
+			int x = Magneto_GetX() + offsetX;
+			int y = Magneto_GetY() + offsetY;
+			int z = Magneto_GetZ();
+			printf("%d, %d, %d\n", x, y, z);
+			OCR1A = START + ((((float) angle) / 180) * (END - START));
+			_delay_ms(200);
+		}
+		for(int angle = 180; angle >= 0; angle = angle - 5){
+			int x = Magneto_GetX() + offsetX;
+			int y = Magneto_GetY() + offsetY;
+			int z = Magneto_GetZ();
+			printf("%d, %d, %d\n", x, y, z);
+			OCR1A = START + ((((float) angle) / 180) * (END - START));
+			_delay_ms(200);
+		}
+	}
+	printf("\n");
 
-	USART_init(); //Call the USART initialization code
-    UCSR0B |= (1<<RXCIE0); //enable interrupts for RXIE
-    sei(); //enable interrupts
+	_delay_ms(1000);
 
-	while(1){ // empty infinite loop
-		
-    }
+	printf("Rotating 180 degrees...\n");
+	OCR1A = START;
+	_delay_ms(1000);
+	int heading = Magneto_GetHeading();
+	int headingOff = Magneto_GetHeadingOffset();
+	printf("Angle: %d	AngleOff: %d\n", heading, headingOff);
+	_delay_ms(1000);
+	OCR1A = END;
+	_delay_ms(1000);
+	heading = Magneto_GetHeading();
+	headingOff = Magneto_GetHeadingOffset();
+	printf("Angle: %d	AngleOff: %d\n", heading, headingOff);
+	_delay_ms(1000);
+	OCR1A = START;
+	_delay_ms(1000);
+	printf("\n");
+	
+	printf("Trying to point towards north......\n");
+	for(int angle = 0; angle <= 180; angle = angle + 5){
+		OCR1A = START + ((((float) angle) / 180) * (END - START));
+		_delay_ms(200);
+
+		int x = Magneto_GetX() + offsetX;
+		int y = Magneto_GetY() + offsetY;
+		int z = Magneto_GetZ();
+		int heading = Magneto_GetHeading();
+		int headingOff = Magneto_GetHeadingOffset();
+		printf("Angle: %d	AngleOff: %d	%d, %d, %d\n", heading, headingOff, x, y, z);
+
+		if(abs(headingOff - 180) < 8 || abs(headingOff - 0) < 8){
+			printf("FOUND NORTH! \n");
+			break;
+		}
+	}
+
+	_delay_ms(20000);
+
+	OCR1A = START;
+	_delay_ms(1000);
 
 	return 0;
-}
-
-ISR(USART_RX_vect){
-	// Parse data
-    received_data = UDR0;
-    if (received_data == '\n') {
-        // Parse formed line
-        if(strstr(received_string, "GPR")){
-            printf("%s\n", received_string);
-            struct minmea_sentence_rmc frame;
-            if (minmea_parse_rmc(&frame, received_string)) {
-				latitude = minmea_tocoord(&frame.latitude);
-				longitude = minmea_tocoord(&frame.longitude);
-				speed = minmea_tofloat(&frame.speed);
-                printf("Lat-Lon-Speed: %f -- %f -- %f\n\n", latitude, longitude, speed);
-            }
-            else {
-                printf("Error! Not parsed correctly!");
-            }
-        }
-
-        // Store a new line
-        received_string[string_index] = '\0'; // Null-terminate the string
-        string_index = 0; // Reset the string index
-    } else {
-        received_string[string_index++] = received_data;
-    }
-
-	// Hard-code for testing
-	latitude = 54.912886;
-	longitude = 9.779658;
-
-	// Calculate angles
-	float heading = Magneto_GetHeadingOffset();
-	float destHeading;
-	float deltaLat = destLatitude - latitude; // y (kind of)
-	float deltaLong = destLongitude - longitude; // x (kind of)
-	float ratio = ((float)deltaLat ) / ((float)deltaLong);
-	float angle = abs(atan(ratio) * 180.0 / ((float) PI));
-	if(deltaLong <= 0 && deltaLat >= 0){
-		destHeading = 90.0 - angle;
-	} else if(deltaLong <= 0 && deltaLat <= 0){
-		destHeading = 90.0 + angle;
-	} else if(deltaLong >= 0 && deltaLat <= 0){
-		destHeading = 270.0 - angle;
-	} else if(deltaLong >= 0 && deltaLat >= 0){
-		destHeading = 270.0 + angle;
-	}
-	printf("DestHeading: %f\n", destHeading);
-
-	// Find direction to rotate
-	float destHeadMinusHead = destHeading - heading;
-	if(destHeadMinusHead >= 0){ // case 1: heading < destHeading
-		if(destHeadMinusHead <= 180.0){
-			printf("Turn left	%f %f\n\n", heading, destHeadMinusHead);
-		} else {
-			printf("Turn right	%f %f\n\n", heading, destHeadMinusHead);
-		}
-	} else { // case 2: heading > destHeading
-		if(destHeadMinusHead >= -180.0){
-			printf("Turn right	%f %f\n\n", heading, destHeadMinusHead);
-		} else {
-			printf("Turn left	%f %f\n\n", heading, destHeadMinusHead);
-		}
-	}
-
-}
-
-void USART_init(void){
-    UBRR0H = (uint8_t)(BAUD_PRESCALER>>8);
-    UBRR0L = (uint8_t)(BAUD_PRESCALER);
-    UCSR0B = (1<<RXEN0)|(1<<TXEN0);
-    UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));
 }
