@@ -29,9 +29,9 @@ float latitude;
 float longitude;
 float speed;
 
-// Right-most point of Alsik building (towards the castle)
-float destLatitude = 54.911363;
-float destLongitude = 9.781718;
+// Front-most point of Church building (facing SDU)
+float destLatitude = 54.911422;
+float destLongitude = 9.781739;
 
 int offsetX = 0;
 int offsetY = 0;
@@ -130,10 +130,10 @@ int main(void){
 	
 	Magneto_init();	
 
-	DDRB |= (1<<PB1); // Set PB1 as output
-	TCCR1A |= (1<<COM1A1) | (1<<WGM11); // Fast PWM, non-inverting mode
-	TCCR1B |= (1<<WGM13) | (1<<WGM12) | (1<<CS11); // Fast PWM, prescaler = 8
-	ICR1 = 39999;   //20ms PWM period
+	DDRE |= (1<<PE3); // Set PB5 as output
+	TCCR3A |= (1<<COM3A1) | (1<<WGM31); // Fast PWM, non-inverting mode
+	TCCR3B |= (1<<WGM33) | (1<<WGM32) | (1<<CS31); // Fast PWM, prescaler = 8
+	ICR3 = 39999;   //20ms PWM period
 
 	int startValueX;
 	int startValueY;
@@ -145,28 +145,28 @@ int main(void){
 	printf("\n");
 	printf("Starting Calibration...\n");
 
-	OCR1A = START; // Set position to 0 degrees
+	OCR3A = START; // Set position to 0 degrees
 	_delay_ms(1000);
 	for(int i = 0; i < 1; i++){
 		startValueX = Magneto_GetX();
 		startValueY = Magneto_GetY();
 		printf("StartX: %d	StartY: %d\n", startValueX, startValueY);
 		_delay_ms(500);
-		OCR1A = NEUTRAL; // Set position to 90 degrees
+		OCR3A = NEUTRAL; // Set position to 90 degrees
 		_delay_ms(1000);
 
 		neutralValueX = Magneto_GetX();
 		neutralValueY = Magneto_GetY();
 		printf("NeutralX: %d	NeutralY: %d\n", neutralValueX, neutralValueY);
 		_delay_ms(500);
-		OCR1A = END; // Set position to 180 degrees (not neccessary)
+		OCR3A = END; // Set position to 180 degrees (not neccessary)
 		_delay_ms(1000);
 
 		endValueX = Magneto_GetX();
 		endValueY = Magneto_GetY();
 		printf("EndX: %d	EndY: %d\n\n", endValueX, endValueY);
 		_delay_ms(500);
-		OCR1A = START;
+		OCR3A = START;
 		_delay_ms(1000);
 	}
 
@@ -188,19 +188,19 @@ int main(void){
 	// -------------------------------------------------------------------
 
 	USART_init(); //Call the USART initialization code
-    UCSR0B |= (1<<RXCIE0); //enable interrupts for RXIE
+    UCSR3B |= (1<<RXCIE3); //enable interrupts for RXIE
     sei(); //enable interrupts
 
 	while(1){ // empty infinite loop
-		
+	
     }
 
 	return 0;
 }
 
-ISR(USART_RX_vect){
+ISR(USART3_RX_vect){
 	// Parse data
-    received_data = UDR0;
+    received_data = UDR3;
     if (received_data == '\n') {
         // Parse formed line
         if(strstr(received_string, "GPR")){
@@ -225,8 +225,8 @@ ISR(USART_RX_vect){
     }
 
 	// Hard-code for testing
-	latitude = 54.912886;
-	longitude = 9.779658;
+	// latitude = 54.912170;
+	// longitude = 9.780412;
 
 	// Calculate angles
 	float heading = Magneto_GetHeadingOffset();
@@ -265,10 +265,10 @@ ISR(USART_RX_vect){
 }
 
 void USART_init(void){
-    UBRR0H = (uint8_t)(BAUD_PRESCALER>>8);
-    UBRR0L = (uint8_t)(BAUD_PRESCALER);
-    UCSR0B = (1<<RXEN0)|(1<<TXEN0);
-    UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));
+    UBRR3H = (uint8_t)(BAUD_PRESCALER>>8);
+    UBRR3L = (uint8_t)(BAUD_PRESCALER);
+    UCSR3B = (1<<RXEN3)|(1<<TXEN3);
+    UCSR3C = ((1<<UCSZ30)|(1<<UCSZ31));
 }
 
 

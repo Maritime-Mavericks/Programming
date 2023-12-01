@@ -113,11 +113,10 @@ int main(void){
 	i2c_init();
 	Magneto_init();	
 
-	DDRB |= (1<<PB1); // Set PB1 as output
-
-	TCCR1A |= (1<<COM1A1) | (1<<WGM11); // Fast PWM, non-inverting mode
-	TCCR1B |= (1<<WGM13) | (1<<WGM12) | (1<<CS11); // Fast PWM, prescaler = 8
-	ICR1 = 39999;   //20ms PWM period
+	DDRE |= (1<<PE3); // Set PB5 as output
+	TCCR3A |= (1<<COM3A1) | (1<<WGM31); // Fast PWM, non-inverting mode
+	TCCR3B |= (1<<WGM33) | (1<<WGM32) | (1<<CS31); // Fast PWM, prescaler = 8
+	ICR3 = 39999;   //20ms PWM period
 
 	int startValueX;
 	int startValueY;
@@ -129,28 +128,28 @@ int main(void){
 	printf("\n");
 	printf("Starting Calibration...\n");
 
-	OCR1A = START; // Set position to 0 degrees
+	OCR3A = START; // Set position to 0 degrees
 	_delay_ms(1000);
 	for(int i = 0; i < 1; i++){
 		startValueX = Magneto_GetX();
 		startValueY = Magneto_GetY();
 		printf("StartX: %d	StartY: %d\n", startValueX, startValueY);
 		_delay_ms(500);
-		OCR1A = NEUTRAL; // Set position to 90 degrees
+		OCR3A = NEUTRAL; // Set position to 90 degrees
 		_delay_ms(1000);
 
 		neutralValueX = Magneto_GetX();
 		neutralValueY = Magneto_GetY();
 		printf("NeutralX: %d	NeutralY: %d\n", neutralValueX, neutralValueY);
 		_delay_ms(500);
-		OCR1A = END; // Set position to 180 degrees (not neccessary)
+		OCR3A = END; // Set position to 180 degrees (not neccessary)
 		_delay_ms(1000);
 
 		endValueX = Magneto_GetX();
 		endValueY = Magneto_GetY();
 		printf("EndX: %d	EndY: %d\n\n", endValueX, endValueY);
 		_delay_ms(500);
-		OCR1A = START;
+		OCR3A = START;
 		_delay_ms(1000);
 	}
 
@@ -168,14 +167,14 @@ int main(void){
 
 	_delay_ms(1000);
 
-	printf("Starting 180 degree rotation...\n");
+	printf("Starting 180 degree rotation with offset...\n");
 	for(int i = 0; i < 1; i++){
 		for(int angle = 0; angle <= 180; angle = angle + 5){
 			int x = Magneto_GetX() + offsetX;
 			int y = Magneto_GetY() + offsetY;
 			int z = Magneto_GetZ();
 			printf("%d, %d, %d\n", x, y, z);
-			OCR1A = START + ((((float) angle) / 180) * (END - START));
+			OCR3A = START + ((((float) angle) / 180) * (END - START));
 			_delay_ms(200);
 		}
 		for(int angle = 180; angle >= 0; angle = angle - 5){
@@ -183,7 +182,30 @@ int main(void){
 			int y = Magneto_GetY() + offsetY;
 			int z = Magneto_GetZ();
 			printf("%d, %d, %d\n", x, y, z);
-			OCR1A = START + ((((float) angle) / 180) * (END - START));
+			OCR3A = START + ((((float) angle) / 180) * (END - START));
+			_delay_ms(200);
+		}
+	}
+	printf("\n");
+
+	_delay_ms(1000);
+
+	printf("Starting 180 degree rotation with no offset...\n");
+	for(int i = 0; i < 1; i++){
+		for(int angle = 0; angle <= 180; angle = angle + 5){
+			int x = Magneto_GetX();
+			int y = Magneto_GetY();
+			int z = Magneto_GetZ();
+			printf("%d, %d, %d\n", x, y, z);
+			OCR3A = START + ((((float) angle) / 180) * (END - START));
+			_delay_ms(200);
+		}
+		for(int angle = 180; angle >= 0; angle = angle - 5){
+			int x = Magneto_GetX();
+			int y = Magneto_GetY();
+			int z = Magneto_GetZ();
+			printf("%d, %d, %d\n", x, y, z);
+			OCR3A = START + ((((float) angle) / 180) * (END - START));
 			_delay_ms(200);
 		}
 	}
@@ -192,25 +214,25 @@ int main(void){
 	_delay_ms(1000);
 
 	printf("Rotating 180 degrees...\n");
-	OCR1A = START;
+	OCR3A = START;
 	_delay_ms(1000);
 	int heading = Magneto_GetHeading();
 	int headingOff = Magneto_GetHeadingOffset();
 	printf("Angle: %d	AngleOff: %d\n", heading, headingOff);
 	_delay_ms(1000);
-	OCR1A = END;
+	OCR3A = END;
 	_delay_ms(1000);
 	heading = Magneto_GetHeading();
 	headingOff = Magneto_GetHeadingOffset();
 	printf("Angle: %d	AngleOff: %d\n", heading, headingOff);
 	_delay_ms(1000);
-	OCR1A = START;
+	OCR3A = START;
 	_delay_ms(1000);
 	printf("\n");
 	
 	printf("Trying to point towards north......\n");
 	for(int angle = 0; angle <= 180; angle = angle + 5){
-		OCR1A = START + ((((float) angle) / 180) * (END - START));
+		OCR3A = START + ((((float) angle) / 180) * (END - START));
 		_delay_ms(200);
 
 		int x = Magneto_GetX() + offsetX;
@@ -220,7 +242,7 @@ int main(void){
 		int headingOff = Magneto_GetHeadingOffset();
 		printf("Angle: %d	AngleOff: %d	%d, %d, %d\n", heading, headingOff, x, y, z);
 
-		if(abs(headingOff - 180) < 8 || abs(headingOff - 0) < 8){
+		if(abs(headingOff - 360) < 6 || abs(headingOff - 0) < 6){
 			printf("FOUND NORTH! \n");
 			break;
 		}
@@ -228,7 +250,7 @@ int main(void){
 
 	_delay_ms(20000);
 
-	OCR1A = START;
+	OCR3A = START;
 	_delay_ms(1000);
 
 	return 0;

@@ -34,7 +34,7 @@ int main(void){
     // LCD_set_cursor(0, 0);
 
     USART_init(); //Call the USART initialization code
-    UCSR0B |= (1<<RXCIE0); //enable interrupts for RXIE
+    UCSR3B |= (1<<RXCIE3); //enable interrupts for RXIE
     sei(); //enable interrupts
 
     while(1){ // empty infinite loop
@@ -43,8 +43,8 @@ int main(void){
     return 0;
 }
 
-ISR(USART_RX_vect){
-    received_data = UDR0;
+ISR(USART3_RX_vect){
+    received_data = UDR3;
     if (received_data == '\n') {
         // Parse formed line
         if(strstr(received_string, "GPR")){
@@ -72,9 +72,9 @@ ISR(USART_RX_vect){
 }
 
 void USART_init(void){
-    UBRR0H = (uint8_t)(BAUD_PRESCALER>>8);
-    UBRR0L = (uint8_t)(BAUD_PRESCALER);
-    UCSR0B = (1<<RXEN0)|(1<<TXEN0);
-    UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));
+    UBRR3H = (uint8_t)(BAUD_PRESCALER>>8);
+    UBRR3L = (uint8_t)(BAUD_PRESCALER);
+    UCSR3B = (1<<RXEN3)|(1<<TXEN3);
+    UCSR3C = ((1<<UCSZ30)|(1<<UCSZ31));
 }
 
