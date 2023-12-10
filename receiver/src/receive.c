@@ -30,8 +30,20 @@ void USART_Transmit(unsigned int data)
 
 int main(void)
 {
-   
     USART_Init(MYUBRR);
+   struct gps
+    {
+        int raw;
+        char receive[2];
+    };
+    struct gps latitude;
+    struct gps longitude;
+    latitude.receive[0] = (latitude.raw >> 8) & 0xFF;
+    latitude.receive[1] = latitude.raw & 0xFF;
+
+    longitude.receive[0] = (longitude.raw >> 8) & 0xFF;
+    longitude.receive[1] = longitude.raw & 0xFF;
+   
 
     DDRB = (1<<5);
     
@@ -43,12 +55,40 @@ int main(void)
       
         USART_Transmit(data);
        //PORTB|=(1<<5);
-        if(data==50){
-            PORTB|=(1<<5);
-        }
-         if(data==49){
-            PORTB=(0<<5);
-        }
+        // if(data==50){
+        //     PORTB|=(1<<5);
+        // }
+        //  if(data==49){
+        //     PORTB=(0<<5);
+        // }
      
     }
 }
+struct gps
+    {
+        int raw;
+        char transmit[2];
+    };
+
+    struct gps latitude;
+    struct gps longitude;
+
+ 
+    latitude.transmit[0] = (latitude.raw >> 8) & 0xFF;
+    latitude.transmit[1] = latitude.raw & 0xFF;
+
+    longitude.transmit[0] = (longitude.raw >> 8) & 0xFF;
+    longitude.transmit[1] = longitude.raw & 0xFF;
+    
+    while (1)
+    {
+        for(int i = 0; i < 2; i++)
+        {
+            USART_Transmit(latitude.transmit[i]);
+        }
+        for(int i = 0; i < 2; i++)
+        {
+            USART_Transmit(longitude.transmit[i]);
+        }
+        _delay_ms(1000);
+    }
