@@ -1,0 +1,11 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "*.ejs": "html",
+        "delay.h": "c",
+        "minmea.h": "c",
+        "math.h": "c",
+        "interrupt.h": "c",
+        "string.h": "c"
+    }
+}

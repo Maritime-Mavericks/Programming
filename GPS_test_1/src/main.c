@@ -18,11 +18,6 @@ char received_string[512]; // Maximum string length, adjust as needed
 volatile uint8_t string_index = 0;
 
 int main(void){
-
-    DDRD  = 0x0F; // I/O board:PD4...7 as outputs, for LEDs
-    DDRC  = 0xF0; // I/O board PC0...3 as inputs, for buttons
-    PORTC = 0x3F; // Enable internal pull at PC0..3 inputs
-    PORTD = 0x00; // Set output LEDs to off
     
     uart_init(); // open the communication to the microcontroller
     io_redirect(); // redirect input and output to the communication

@@ -6,7 +6,8 @@
         "io.h": "c",
         "hmc5883l.h": "c",
         "delay.h": "c",
-        "i2cmaster.h": "c"
+        "i2cmaster.h": "c",
+        "mpu6050_res_define.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

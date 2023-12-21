@@ -168,12 +168,13 @@ int main(void){
 	_delay_ms(1000);
 
 	printf("Starting 180 degree rotation with offset...\n");
-	for(int i = 0; i < 1; i++){
+	for(int i = 0; i < 2; i++){
 		for(int angle = 0; angle <= 180; angle = angle + 5){
 			int x = Magneto_GetX() + offsetX;
 			int y = Magneto_GetY() + offsetY;
 			int z = Magneto_GetZ();
-			printf("%d, %d, %d\n", x, y, z);
+			int head = Magneto_GetHeadingOffset();
+			printf("%d, %d, %d, %d\n", x, y, z, head);
 			OCR3A = START + ((((float) angle) / 180) * (END - START));
 			_delay_ms(200);
 		}
@@ -181,7 +182,8 @@ int main(void){
 			int x = Magneto_GetX() + offsetX;
 			int y = Magneto_GetY() + offsetY;
 			int z = Magneto_GetZ();
-			printf("%d, %d, %d\n", x, y, z);
+			int head = Magneto_GetHeadingOffset();
+			printf("%d, %d, %d, %d\n", x, y, x - offsetX, y - offsetY);
 			OCR3A = START + ((((float) angle) / 180) * (END - START));
 			_delay_ms(200);
 		}
@@ -190,45 +192,45 @@ int main(void){
 
 	_delay_ms(1000);
 
-	printf("Starting 180 degree rotation with no offset...\n");
-	for(int i = 0; i < 1; i++){
-		for(int angle = 0; angle <= 180; angle = angle + 5){
-			int x = Magneto_GetX();
-			int y = Magneto_GetY();
-			int z = Magneto_GetZ();
-			printf("%d, %d, %d\n", x, y, z);
-			OCR3A = START + ((((float) angle) / 180) * (END - START));
-			_delay_ms(200);
-		}
-		for(int angle = 180; angle >= 0; angle = angle - 5){
-			int x = Magneto_GetX();
-			int y = Magneto_GetY();
-			int z = Magneto_GetZ();
-			printf("%d, %d, %d\n", x, y, z);
-			OCR3A = START + ((((float) angle) / 180) * (END - START));
-			_delay_ms(200);
-		}
-	}
-	printf("\n");
+	// printf("Starting 180 degree rotation with no offset...\n");
+	// for(int i = 0; i < 1; i++){
+	// 	for(int angle = 0; angle <= 180; angle = angle + 5){
+	// 		int x = Magneto_GetX();
+	// 		int y = Magneto_GetY();
+	// 		int z = Magneto_GetZ();
+	// 		printf("%d, %d, %d\n", x, y, z);
+	// 		OCR3A = START + ((((float) angle) / 180) * (END - START));
+	// 		_delay_ms(200);
+	// 	}
+	// 	for(int angle = 180; angle >= 0; angle = angle - 5){
+	// 		int x = Magneto_GetX();
+	// 		int y = Magneto_GetY();
+	// 		int z = Magneto_GetZ();
+	// 		printf("%d, %d, %d\n", x, y, z);
+	// 		OCR3A = START + ((((float) angle) / 180) * (END - START));
+	// 		_delay_ms(200);
+	// 	}
+	// }
+	// printf("\n");
 
-	_delay_ms(1000);
+	// _delay_ms(1000);
 
-	printf("Rotating 180 degrees...\n");
-	OCR3A = START;
-	_delay_ms(1000);
-	int heading = Magneto_GetHeading();
-	int headingOff = Magneto_GetHeadingOffset();
-	printf("Angle: %d	AngleOff: %d\n", heading, headingOff);
-	_delay_ms(1000);
-	OCR3A = END;
-	_delay_ms(1000);
-	heading = Magneto_GetHeading();
-	headingOff = Magneto_GetHeadingOffset();
-	printf("Angle: %d	AngleOff: %d\n", heading, headingOff);
-	_delay_ms(1000);
-	OCR3A = START;
-	_delay_ms(1000);
-	printf("\n");
+	// printf("Rotating 180 degrees...\n");
+	// OCR3A = START;
+	// _delay_ms(1000);
+	// int heading = Magneto_GetHeading();
+	// int headingOff = Magneto_GetHeadingOffset();
+	// printf("Angle: %d	AngleOff: %d\n", heading, headingOff);
+	// _delay_ms(1000);
+	// OCR3A = END;
+	// _delay_ms(1000);
+	// heading = Magneto_GetHeading();
+	// headingOff = Magneto_GetHeadingOffset();
+	// printf("Angle: %d	AngleOff: %d\n", heading, headingOff);
+	// _delay_ms(1000);
+	// OCR3A = START;
+	// _delay_ms(1000);
+	// printf("\n");
 	
 	printf("Trying to point towards north......\n");
 	for(int angle = 0; angle <= 180; angle = angle + 5){
@@ -248,7 +250,7 @@ int main(void){
 		}
 	}
 
-	_delay_ms(20000);
+	_delay_ms(10000);
 
 	OCR3A = START;
 	_delay_ms(1000);

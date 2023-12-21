@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "usart.h": "c",
+        "interrupt.h": "c",
+        "io.h": "c",
+        "hmc5883l.h": "c",
+        "delay.h": "c",
+        "i2cmaster.h": "c",
+        "inttypes.h": "c",
+        "mpu6050_res_define.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
